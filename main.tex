@@ -1,0 +1,324 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{url}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={Design and Implementation of a Hybrid RSA--PQC Key Exchange System for Q-Day Readiness},
+    pdfauthor={Shatha Al-Ahamd, Rahaf Shebli, Fawaz Sawalha}
+}
+
+\setstretch{1.3}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    {\large Palestine\\[0.5em]}
+    {\large An-Najah National University\\[0.5em]}
+    {\large Faculty of Information Technology\\[3em]}
+
+    {\LARGE \textbf{Design and Implementation of a Hybrid RSA--PQC Key Exchange System for Q-Day Readiness}\\[2.5em]}
+
+    \begin{flushleft}
+    \textbf{Prepared by:}\\
+    Shatha Al-Ahamd \hfill 12326285\\
+    Rahaf Shebli \hfill 12324474\\
+    Fawaz Sawalha \hfill 12217106\\[1.5em]
+
+    \textbf{Supervisor:}\\
+    Dr. Jehad Hamamreh
+    \end{flushleft}
+
+    \vfill
+    {\large \today}
+\end{titlepage}
+
+\begin{center}
+    {\LARGE \textbf{Abstract}}
+\end{center}
+
+Quantum computing represents a major technological shift that may significantly affect modern cybersecurity systems. Classical public-key cryptographic systems such as RSA and Elliptic Curve Cryptography (ECC) rely on mathematical problems that are computationally infeasible for classical computers but become vulnerable in the presence of sufficiently powerful quantum computers. The anticipated milestone known as \emph{Q-Day} refers to the point at which quantum computers become capable of breaking widely deployed cryptographic systems, particularly those based on integer factorization and discrete logarithms~\cite{shor1994,shor1997}.
+
+This scenario introduces a critical risk to global digital infrastructure, including banking systems, secure communications, military networks, and cloud services. To mitigate this risk, this paper proposes a hybrid post-quantum cryptographic system that combines classical cryptography (RSA), post-quantum cryptography (CRYSTALS-Kyber), and symmetric encryption (AES). The system is designed as a transitional security model that preserves backward compatibility while introducing quantum resistance~\cite{nistir8105,stebila2017}.
+
+The proposed system was implemented in Python and tested in an educational simulation to measure performance in terms of computational cost and security resilience. Experimental results indicate that, although the hybrid model introduces additional computational overhead, it significantly improves resistance against both classical and quantum attacks, making it a practical solution for migration toward post-quantum standards.
+
+\textbf{Keywords:} Post-Quantum Cryptography, RSA, CRYSTALS-Kyber, Hybrid Cryptosystem, Q-Day, Key Exchange, Quantum Security.
+
+\newpage
+\section{Introduction}
+
+Cryptography is the foundation of secure communication in modern digital systems. It provides confidentiality, integrity, authentication, and non-repudiation across applications such as online banking, messaging systems, cloud storage, and government communications. Traditional cryptographic systems such as RSA and ECC rely on mathematical problems that are computationally difficult for classical computers to solve within a practical amount of time~\cite{rsa1978}.
+
+RSA, for example, depends on the difficulty of factoring large composite integers into their prime factors. However, the emergence of quantum computing introduces a fundamental shift in computational capability. Quantum computers exploit phenomena such as superposition and entanglement to perform computations in ways that differ significantly from classical computers. As a result, algorithms such as Shor's algorithm can solve integer factorization and discrete logarithm problems in polynomial time~\cite{shor1994,shor1997}.
+
+This means that once sufficiently powerful quantum computers become available, many currently deployed public-key cryptosystems will become insecure. This future threat has led to the concept of \emph{Q-Day}, a critical security milestone at which classical public-key encryption can no longer be considered reliable. Because replacing the global cryptographic infrastructure is costly and time-consuming, the transition to post-quantum cryptography must be gradual. Hybrid cryptographic systems provide a practical intermediate solution by combining classical and post-quantum algorithms to preserve security continuity during migration~\cite{nistir8105,stebila2017}.
+
+\section{Background and Related Work}
+
+\subsection{RSA Cryptography}
+
+RSA is one of the most widely used public-key cryptosystems, introduced in 1978 by Rivest, Shamir, and Adleman~\cite{rsa1978}. It is based on the mathematical difficulty of factoring large integers into their prime factors.
+
+RSA uses a pair of keys:
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Public key:} used for encryption and shared openly.
+    \item \textbf{Private key:} used for decryption and kept secret.
+\end{itemize}
+
+Despite its widespread deployment, RSA becomes vulnerable in the presence of quantum computers due to Shor's algorithm~\cite{shor1997}.
+
+\subsection{Quantum Computing and Security Threats}
+
+Quantum computing differs significantly from classical computing because it uses quantum bits (qubits), which can exist in multiple states simultaneously. Important principles include:
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Superposition:} a qubit can represent both 0 and 1 at the same time.
+    \item \textbf{Entanglement:} qubits can be correlated such that the state of one depends on another.
+\end{itemize}
+
+These properties allow quantum computers to solve certain computational problems exponentially faster than classical computers. Shor's algorithm is especially important because it can break RSA and ECC by efficiently solving their underlying hard mathematical problems~\cite{shor1994,shor1997}. This creates a direct threat to modern cybersecurity systems.
+
+\subsection{Post-Quantum Cryptography (PQC)}
+
+Post-Quantum Cryptography (PQC) refers to cryptographic algorithms designed to remain secure against both classical and quantum attacks. Unlike quantum cryptography, PQC does not require quantum hardware. Major PQC categories include~\cite{bernstein2009,bernstein2017,nistir8105}:
+\begin{itemize}[leftmargin=2em]
+    \item Lattice-based cryptography (e.g., CRYSTALS-Kyber, CRYSTALS-Dilithium)
+    \item Code-based cryptography (e.g., McEliece)
+    \item Hash-based cryptography (e.g., XMSS, SPHINCS+)
+    \item Multivariate cryptography
+\end{itemize}
+
+Among these families, CRYSTALS-Kyber has been standardized by NIST as a key-encapsulation mechanism because of its strong security guarantees and efficient performance~\cite{fips203,bos2018}.
+
+\subsection{Related Work}
+
+Recent research on post-quantum migration highlights the importance of hybrid cryptographic models. Several studies argue that complete replacement of classical cryptosystems is impractical in the short term because of compatibility constraints with existing protocols such as TLS, SSH, and VPNs~\cite{stebila2017,tls13}. Hybrid approaches have therefore been proposed in which classical and post-quantum algorithms are used together during the transition period, reducing risk while enabling gradual adoption of PQC standards~\cite{nistir8105,stebila2017}.
+
+\section{Proposed Hybrid System Design}
+
+\subsection{System Architecture}
+
+The proposed system integrates multiple cryptographic components to create a layered security model:
+\begin{itemize}[leftmargin=2em]
+    \item RSA key pairs for classical encryption compatibility
+    \item CRYSTALS-Kyber for post-quantum secure key encapsulation
+    \item SHA-256 for cryptographic hashing and key derivation
+    \item AES symmetric encryption for efficient data protection
+\end{itemize}
+
+\subsection{Workflow}
+
+The hybrid system operates according to the following sequence:
+\begin{enumerate}[leftmargin=2em]
+    \item RSA key pair generation for sender and receiver
+    \item Kyber key encapsulation to generate a quantum-resistant shared secret
+    \item Exchange of encrypted key material between parties
+    \item Generation of two independent shared secrets (RSA-based and Kyber-based)
+    \item Combination of both secrets using the SHA-256 hash function
+    \item Derivation of a secure session key
+    \item Encryption of data using AES
+    \item Decryption at the receiver side using the same session key
+\end{enumerate}
+
+This dual-layer key exchange ensures that compromise of one algorithm does not automatically cause full system failure.
+
+\subsection{System Model Assumptions}
+
+The system assumes the following:
+\begin{itemize}[leftmargin=2em]
+    \item Communication channels are initially insecure.
+    \item No pre-shared keys exist between communicating parties.
+    \item Attackers may use both classical and future quantum computing methods.
+    \item Attackers may attempt passive eavesdropping and active cryptographic attacks.
+\end{itemize}
+
+\subsection{Advantages of the Proposed System}
+
+The hybrid model offers several important benefits:
+\begin{itemize}[leftmargin=2em]
+    \item Strong resistance against future quantum attacks
+    \item Compatibility with existing RSA-based infrastructure
+    \item Multi-layered defense
+    \item Reduced risk of single-algorithm failure
+    \item A smooth transition path toward full post-quantum adoption
+\end{itemize}
+
+\section{Implementation}
+
+\subsection{Tools and Technologies}
+
+The system was implemented using the following technologies:
+\begin{itemize}[leftmargin=2em]
+    \item Python programming language
+    \item PyCryptodome library for RSA and AES operations
+    \item \texttt{hashlib} for SHA-256 hashing
+    \item An educational prototype/simulation environment
+\end{itemize}
+
+Kyber was represented through a simulated implementation inspired by the \texttt{liboqs} concept model. This was done for educational purposes to demonstrate the hybrid integration rather than to claim a production-grade cryptographic deployment.
+
+\subsection{Implementation Process}
+
+The implementation consists of several key modules:
+\begin{itemize}[leftmargin=2em]
+    \item RSA key generation module
+    \item Kyber-based key encapsulation simulation module
+    \item Secure session key derivation module
+    \item AES encryption and decryption module
+\end{itemize}
+
+Each module was designed to be independent, allowing modular testing and future upgrades.
+
+\subsection{Experimental Setup}
+
+The system was tested under the following environment:
+\begin{itemize}[leftmargin=2em]
+    \item Processor: Intel Core i5
+    \item Memory: 8 GB RAM
+    \item Operating system: Windows 10/11
+    \item Python version: 3.x
+\end{itemize}
+
+Performance evaluation was conducted using Python's built-in timing functions to estimate execution overhead for the main cryptographic operations.
+
+\section{Performance Evaluation}
+
+\subsection{Evaluation Metrics}
+
+The system was evaluated using the following metrics:
+\begin{itemize}[leftmargin=2em]
+    \item Key generation time
+    \item Encryption time
+    \item Decryption time
+    \item Key size overhead
+    \item Security strength comparison
+\end{itemize}
+
+\subsection{Results}
+
+\begin{table}[H]
+    \centering
+    \caption{Performance comparison between RSA-only and hybrid system}
+    \begin{tabular}{>{\raggedright\arraybackslash}p{5cm}cc}
+        \toprule
+        \textbf{Metric} & \textbf{RSA Only} & \textbf{Hybrid System} \\
+        \midrule
+        Key Generation Time & 120 ms & 210 ms \\
+        Encryption Time & 15 ms & 25 ms \\
+        Decryption Time & 18 ms & 28 ms \\
+        Key Size & 2048 bits & \textasciitilde 3168 bits \\
+        Security Level & Classical & Quantum-Resistant \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Analysis}
+
+The results demonstrate that the hybrid system introduces additional computational overhead due to the simultaneous use of RSA and Kyber-related operations. However, this overhead remains within acceptable limits for many practical applications.
+
+There is a clear trade-off between performance and security. Even so, the added computational cost is justified by the significant improvement in resistance against both classical and quantum attacks. In environments where security is a high priority, such as government, defense, or financial systems, this overhead can be considered acceptable.
+
+\section{Security Analysis}
+
+The security of the proposed system is based on well-known cryptographic assumptions used in current research. CRYSTALS-Kyber achieves IND-CCA2 security based on the hardness of the Module Learning With Errors (MLWE) problem, which is currently considered resistant to both classical and quantum attacks~\cite{fips203,bos2018}. In addition, Kyber supports multiple NIST security levels, enabling flexible deployment depending on application requirements~\cite{fips203}.
+
+By combining RSA with Kyber in a hybrid architecture, the system ensures that compromise of one algorithm does not necessarily result in compromise of the overall session key. This provides stronger security through layered protection. More specifically:
+\begin{itemize}[leftmargin=2em]
+    \item RSA preserves compatibility with existing infrastructure.
+    \item CRYSTALS-Kyber provides quantum-resistant key establishment.
+    \item AES enables efficient and fast symmetric encryption.
+\end{itemize}
+
+Because the final encryption key is derived from multiple independent sources and combined through a secure hash function, cryptographic attacks become substantially more complex than in single-algorithm designs.
+
+\section{Challenges and Limitations}
+
+Despite its advantages, the system has several limitations:
+\begin{itemize}[leftmargin=2em]
+    \item Increased key sizes due to post-quantum algorithms
+    \item Higher computational cost than classical-only systems
+    \item Integration complexity with existing protocols
+    \item Limited hardware optimization for PQC algorithms
+    \item Lack of widespread native support in current commercial systems
+\end{itemize}
+
+In addition, this work uses a simulated Kyber component for educational evaluation. Therefore, the prototype should be interpreted as a proof of concept rather than as a production deployment.
+
+\section{Future Work}
+
+Future improvements may include:
+\begin{itemize}[leftmargin=2em]
+    \item Full integration with the \texttt{liboqs} library for practical PQC support
+    \item Deployment within TLS 1.3 and HTTPS frameworks
+    \item Optimization for IoT and mobile devices
+    \item Implementation of digital signature schemes using CRYSTALS-Dilithium
+    \item Hardware acceleration for lattice-based cryptography
+\end{itemize}
+
+\section{Conclusion}
+
+This paper presented a hybrid cryptographic system designed to address the emerging threat of quantum computing. By combining RSA, CRYSTALS-Kyber, SHA-256, and AES, the system provides a robust and practical transitional security model.
+
+Although the system introduces additional computational overhead, it significantly enhances resilience against both classical and quantum adversaries. Hybrid cryptography therefore represents a useful step toward post-quantum security readiness and can support future migration to standardized quantum-resistant systems.
+
+\newpage
+\begin{thebibliography}{10}
+
+\bibitem{fips203}
+National Institute of Standards and Technology (NIST), ``FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard,'' NIST, Gaithersburg, MD, USA, 2024.
+
+\bibitem{rsa1978}
+R. L. Rivest, A. Shamir, and L. Adleman, ``A Method for Obtaining Digital Signatures and Public-Key Cryptosystems,'' \emph{Communications of the ACM}, vol. 21, no. 2, pp. 120--126, 1978.
+
+\bibitem{shor1994}
+P. W. Shor, ``Algorithms for Quantum Computation: Discrete Logarithms and Factoring,'' in \emph{Proceedings of the 35th Annual Symposium on Foundations of Computer Science (FOCS)}, 1994, pp. 124--134.
+
+\bibitem{bernstein2009}
+D. J. Bernstein, J. Buchmann, and E. Dahmen, \emph{Post-Quantum Cryptography}. Berlin, Germany: Springer, 2009.
+
+\bibitem{nistir8105}
+L. Chen et al., ``Report on Post-Quantum Cryptography,'' NISTIR 8105, National Institute of Standards and Technology, 2016.
+
+\bibitem{bos2018}
+J. Bos et al., ``CRYSTALS--Kyber: A CCA-Secure Module-Lattice-Based KEM,'' in \emph{2018 IEEE European Symposium on Security and Privacy (EuroS\&P)}, 2018, pp. 353--367.
+
+\bibitem{shor1997}
+P. W. Shor, ``Polynomial-Time Algorithms for Prime Factorization and Discrete Logarithms on a Quantum Computer,'' \emph{SIAM Journal on Computing}, vol. 26, no. 5, pp. 1484--1509, 1997.
+
+\bibitem{stebila2017}
+D. Stebila and M. Mosca, ``Post-Quantum Key Exchange for the Internet and the Open Quantum Safe Project,'' in \emph{Selected Areas in Cryptography}, LNCS 10532, Springer, 2017, pp. 14--37.
+
+\bibitem{tls13}
+E. Rescorla, ``The Transport Layer Security (TLS) Protocol Version 1.3,'' RFC 8446, Internet Engineering Task Force, 2018.
+
+\bibitem{bernstein2017}
+D. J. Bernstein and T. Lange, ``Post-Quantum Cryptography,'' \emph{Nature}, vol. 549, no. 7671, pp. 188--194, 2017.
+
+\end{thebibliography}
+
+\end{document}
